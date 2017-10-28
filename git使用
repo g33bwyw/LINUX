@@ -1,0 +1,11 @@
+一.git SSH免密推送
+    1.检查 ~ssh目录是否存在，存在且删除
+    2.ssh-keygen -t rsa -C "email@qq.com  生成证书
+    3.将私钥添加到 ssh-agent
+        eval "$(ssh-agent -s)"      //打开ssh-agent
+        ssh-add ~/.ssh/id_rsa       //将私钥添加到ssh-agent
+    4.复制公钥证书的内容，添加到github中   菜单：setting/SSH AND GPN KEYS中
+
+备注：如果使用soucetree 一开始使用https clone的要改成 ssh
+1.菜单：工具/选项   SSH客户端配置要改成openssh
+2.项目，导航栏设置菜单中需要把远程克隆仓库地址改成由https得改成ssh的

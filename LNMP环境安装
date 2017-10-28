@@ -73,4 +73,47 @@ Nginx 版本：1.13.6
      WantedBy=multi-user.target
 
 
+Mysql安装
+mysql版本5.7.20已经编译好的安装包
+1.准备编译环境
+    yum groupinstall -y "Server Platform Development"  "Development tools"[如果已经安装可以省略]
+    yum install -y cmake
+2.解压文件到/usr/local同时重新命名
+    tar -zxvf mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz -C /usr/local/
+    mv mysql-5.7.20-linux-glibc2.12-x86_64/ mysql
+3.创建数据目录
+    cd /usr/local/mysql
+    mkdir data
+4.创建mysql组以及用户
+    groupadd -r mysql
+    useradd -r mysql -g mysql -s /sbin/nologin -d /usr/local/mysql/
+5.改变mysql的权限
+    chown -R mysql. mysql
+6.初始化数据库
+    5.7.18前的版本用如下方式：
+        /usr/local/mysql/bin/mysql_install_db --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
+    5.8.18后的版本用如下方式
+        /usr/local/mysql/bin/mysqld --initialize-insecure --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
+7.设置开机自启
+    cd /usr/local/mysql/support-files/
+    cp mysql.server  /etc/init.d/mysqld
+    chmod +x /etc/init.d/mysqld
+    vim /etc/rc.d/rc.local 添加内容如下并且保存：/etc/init.d/mysqld start到rc.local
+8.设置环境变量
+    vi /root/.bash_profile 内容修改如：PATH=$PATH:$HOME/bin:/usr/local/mysql/bin:/usr/local/mysql/lib
+    source /root/.bash_profile
+9.启动数据库：
+    /etc/init.d/mysqld start
+    /etc/init.d/mysqld stop
+
+备注：数据库配置文件修改/etc/my.cnf
+[mysqld]
+basedir=/usr/local/mysql
+datadir=/usr/local/mysql/data
+socket=/tmp/mysql.sock
+user=mysql
+port=3306
+
+
+
 

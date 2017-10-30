@@ -94,7 +94,7 @@ mysql版本5.7.20已经编译好的安装包
         /usr/local/mysql/bin/mysql_install_db --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
     5.8.18后的版本用如下方式
         /usr/local/mysql/bin/mysqld --initialize-insecure --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
-7.设置开机自启
+7.添加mysql启动脚本
     cd /usr/local/mysql/support-files/
     cp mysql.server  /etc/init.d/mysqld
     chmod +x /etc/init.d/mysqld
@@ -113,6 +113,82 @@ datadir=/usr/local/mysql/data
 socket=/tmp/mysql.sock
 user=mysql
 port=3306
+
+
+PHP安装
+PHP5.6.32版本
+1.安装基本扩展
+    yum install libmcrypt libmcrypt-devel mhash mhash-devel libxml2 libxml2-devel bzip2 bzip2-devel php-gd
+2.解压PHP包
+    tar -zxvf php-5.6.32.tar.gz  -C /usr/local/src
+3.编译PHP包
+    ./configure --prefix=/usr/local/php \
+    --with-config-file-scan-dir=/etc/php.d \
+    --with-config-file-path=/etc \
+    --with-mysql=/usr/local/mysql \
+    --with-mysqli=/usr/local/mysql/bin/mysql_config \
+    --enable-mbstring \
+    --with-freetype-dir \
+    --with-jpeg-dir \
+    --with-png-dir \
+    --with-zlib \
+    --with-libxml-dir=/usr \
+    --with-openssl \
+    -enable-xml \
+    --enable-sockets \
+    --enable-fpm \
+    --with-mcrypt \
+    --with-bz2 \
+    make && make install
+如果出现如下错误：
+    configure: error: mcrypt.h not found. Please reinstall libmcrypt.
+解决方案：
+    yum install -y epel-release
+    yum install -y libmcrypt-devel
+    两个不能一起安装,因为CentOs6或7默认的yum源没有 libmcrypt-devel这个包,只能借助epel的yum源,所以先安装epel,再安装
+    libmcrypt
+
+小知识点：
+    EPEL的全称叫 Extra Packages for Enterprise Linux 。EPEL是由 Fedora 社区打造，为 RHEL 及衍生发行版如 CentOS、Scientific Linux 等提供高质量软件包的项目。装上了 EPEL之后，就相当于添加了一个第三方源
+
+4.添加php和php-fpm配置文件。
+    cp /usr/local/src/php-5.6.32/php.ini-production /etc/php.ini //配置php.ini
+    //配置php.conf
+    cd /usr/local/php/etc/
+    cp php-fpm.conf.default php-fpm.conf
+    //;pid=run/php-fpm.pid 修改为pid = /usr/local/php/var/run/php-fpm.pid 加载php-fpm进程文件
+    sed -i 's@;pid = run/php-fpm.pid@pid = /usr/local/php/var/run/php-fpm.pid@' php-fpm.conf
+
+5.添加启动脚本
+    cp /usr/local/src/php-5.6.32/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
+    chmod +x /etc/init.d/php-fpm
+
+6.添加php-fpm至服务列表并设置开机自启
+    chkconfig --add php-fpm
+    chkconfig --list php-fpm
+    chkconfig php-fpm on
+
+7.添加nginx对fastcgi的支持，首先备份默认的配置文件。
+    cp /usr/local/nginx/nginx.conf /usr/local/nginx/nginx.confbak
+    cp /usr/local/nginx/nginx.conf.default /usr/local/nginx/nginx.conf
+8.修改nginx配置
+    #添加了index.php
+    location / {
+        root   html;
+        index  index.html index.htm index.php;
+    }
+
+    #/scripts修改为/usr/local/nginx/html网站根目录
+    location ~ \.php$ {
+        root           html;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  /usr/local/nginx/html$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+
+备注：nginx配置只是暂时修改成这样，web服务器有多个项目，nginx配置需要重新配置，见nginx配置
+
 
 
 

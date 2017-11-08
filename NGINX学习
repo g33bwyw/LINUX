@@ -1,0 +1,200 @@
+1.Nginx基础配置
+基本环境配置：yum -y install gcc gcc-c++ autoconf pcre pcre-devel make automake
+              yum -y install wget http-tools vim
+一次初始化【主要是设置目录】 cd otp;mkdir app download logs work backupzhu
+注意：确认senlinux关闭 ，iptables关闭
+
+2.Nginx的特效
+    1.  IO多路复用：在一个个并发内交替的顺序完成，复用是指复用同一个线程
+        IO多路复用的实现方式：select,poll ,epoll
+    2.轻量级：功能模块少，代码模块化
+    3.CPU亲和
+    4.senfile
+
+3.nginx yum安装
+    1.配置yum源： vim /etc/yum.response.d/nginx.repo
+        [nginx]
+        name=nginx repo
+        baseurl=http://nginx.org/packages/OS/OSRELEASE/$basearch/
+        gpgcheck=0
+        enabled=1
+        备注： OS 指的是系统版本 "rhel","centos"
+                OSRELEASE 指的是6版本或7版本
+     2.yum -y install nginx
+
+4.nginx安装说明：
+     安装目录查看：rpm -ql nginx ,安装目录显示如下
+     /etc/logrotate.d/nginx             //nginx日志轮询，日志可以设置以天或者月方式切割
+     /*******************nginx配置目录*************/
+     /etc/nginx
+     /etc/nginx/conf.d
+     /etc/nginx/conf.d/default.conf     //nginx默认配置目录
+
+     /etc/nginx/fastcgi_params
+     /etc/nginx/koi-utf
+     /etc/nginx/koi-win
+
+     /etc/nginx/mime.types              //定义nginx允许访问的文件类型主要是指content-type
+
+     /etc/nginx/modules
+     /etc/nginx/nginx.conf              //nginx主配置文件
+     /etc/nginx/scgi_params
+     /etc/nginx/uwsgi_params
+     /etc/nginx/win-utf
+     /etc/sysconfig/nginx
+     /etc/sysconfig/nginx-debug
+     /usr/lib/systemd/system/nginx-debug.service
+     /usr/lib/systemd/system/nginx.service
+     /usr/lib64/nginx
+     /usr/lib64/nginx/modules
+     /usr/libexec/initscripts/legacy-actions/nginx
+     /usr/libexec/initscripts/legacy-actions/nginx/check-reload
+     /usr/libexec/initscripts/legacy-actions/nginx/upgrade
+     /usr/sbin/nginx                   //nginx启动文件
+     /usr/sbin/nginx-debug
+
+     /*****************************nginx说明****************************************/
+     /usr/share/doc/nginx-1.12.2
+     /usr/share/doc/nginx-1.12.2/COPYRIGHT
+     /usr/share/man/man8/nginx.8.gz
+
+     /*********************nginx数据目录**************************************/
+     /usr/share/nginx
+     /usr/share/nginx/html
+     /usr/share/nginx/html/50x.html
+     /usr/share/nginx/html/index.html
+     /************************************************************************/
+     /var/cache/nginx                   //nginx缓存目录
+     /var/log/nginx                     //nginx日志文件
+
+     查看nginx默认添加的模块：nginx -V
+        --prefix=/etc/nginx
+        --sbin-path=/usr/sbin/nginx
+        --modules-path=/usr/lib64/nginx/modules
+        --conf-path=/etc/nginx/nginx.conf
+        --error-log-path=/var/log/nginx/error.log
+        --http-log-path=/var/log/nginx/access.log
+        --pid-path=/var/run/nginx.pid
+        --lock-path=/var/run/nginx.lock
+        --http-client-body-temp-path=/var/cache/nginx/client_temp
+        --http-proxy-temp-path=/var/cache/nginx/proxy_temp
+        --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp
+        --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp
+        --http-scgi-temp-path=/var/cache/nginx/scgi_temp
+        --user=nginx
+        --group=nginx
+        --with-compat
+        --with-file-aio
+        --with-threads
+        --with-http_addition_module
+        --with-http_auth_request_module
+        --with-http_dav_module
+        --with-http_flv_module
+        --with-http_gunzip_module
+        --with-http_gzip_static_module
+        --with-http_mp4_module
+        --with-http_random_index_module
+        --with-http_realip_module
+        --with-http_secure_link_module
+        --with-http_slice_module
+        --with-http_ssl_module
+        --with-http_stub_status_module
+        --with-http_sub_module
+        --with-http_v2_module
+        --with-mail
+        --with-mail_ssl_module
+        --with-stream
+        --with-stream_realip_module
+        --with-stream_ssl_module
+        --with-stream_ssl_preread_module
+        --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong
+        --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -fPIC'
+        --with-ld-opt='-Wl,-z,relro -Wl,-z,now -pie'
+
+    查看Nginx的版本：nginx -v
+            nginx version: nginx/1.12.2
+    Nginx的配置文件说明：
+        nginx的主配置文件：/etc/nginx/nginx.conf
+            user  nginx;                //nginx用户
+            worker_processes  1;        //开启的进程数，原则上是cpu的核数-1
+
+            error_log  /var/log/nginx/error.log warn;       //nginx的错误日志
+            pid        /var/run/nginx.pid;                  //nginx启动的pid文件
+            events {
+                worker_connections  1024;                   //每个进程支持的连接数
+            }
+            http {
+                include       /etc/nginx/mime.types;        //文件扩展名与文件类型的对应
+                default_type  application/octet-stream;     //默认文件类型
+
+                log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                                  '$status $body_bytes_sent "$http_referer" '
+                                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+                access_log  /var/log/nginx/access.log  main;            //访问日志
+
+                sendfile        on;                                     //开启高效文件传输模式
+                #tcp_nopush     on;
+
+                keepalive_timeout  65;                                  //保持连接的超时时间
+
+                #gzip  on;
+
+                include /etc/nginx/conf.d/*.conf;                       //服务器配置文件
+            }
+
+        /****************************网站相关配置****************************************/
+        server {
+            listen       80;                //监听端口
+            server_name  www.note.com;      //主机名
+
+            #charset koi8-r;
+            access_log  /var/log/nginx/note.access.log  main;          //nginx访问日志
+
+            location / {
+                root   /home/web/www.note.com;                         //根目录
+                index  index.html index.htm;                           //支持访问的文件
+            }
+
+            error_page  404              /404.html;                     //404指向
+
+            # redirect server error pages to the static page /50x.html
+            #
+            error_page   500 502 503 504  /50x.html;                    //服务器错误指向
+            location = /50x.html {
+                root   /home/web/www.note.com;
+            }
+
+            # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+            #
+            #location ~ \.php$ {
+            #    proxy_pass   http://127.0.0.1;
+            #}
+
+            # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+            #
+            #location ~ \.php$ {
+            #    root           html;
+            #    fastcgi_pass   127.0.0.1:9000;
+            #    fastcgi_index  index.php;
+            #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+            #    include        fastcgi_params;
+            #}
+
+            # deny access to .htaccess files, if Apache's document root
+            # concurs with nginx's one
+            #
+            #location ~ /\.ht {
+            #    deny  all;
+            #}
+        }
+
+
+
+
+
+
+
+
+
+

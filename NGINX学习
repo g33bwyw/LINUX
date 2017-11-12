@@ -208,7 +208,100 @@
             #}
         }
 
+5.nginx变量(通过修改nginx主配置文件的log_format记录用户访问的相关信息)：
+    Http请求变量arg_PARAMERTER
+            http_HEADER 请求变量
+            sent_http_HEADER 响应请求变量
+    内置变量：nginx内置变量
+    自定义变量：用户自定义变量
+    例子如下：
+        log_format  main  $http_User_Agent '-$remote_addr - $remote_user [$time_local] "$request" '
+                              '$status $body_bytes_sent "$http_referer" '
+                              '"$http_user_agent" "$http_x_forwarded_for"';
+        $http_User_Agent就是请求变量
+    nginx语法错误：nginx -t -c /etc/nginx/nginx.conf
 
+6.nginx模块：
+    1.--with-http_stub_status_module客户端链接状态
+      主要是配置在location模块或者server模块中
+      location /status {
+          stub_status;
+      }
+    2.--with-http_random_index_module目录中随机选择一个主页
+        主要配置在location模块中
+        默认是关闭的 random_index on | off
+        location / {
+            root   /home/web/www.note.com;
+            random_index on;
+            #index  error.html index.html index.html;
+        }
+
+
+     3.--with-http_sub_module Http内容替换
+        语法：
+            sub_filter 原内容 新内容
+            主要是配置在http,server,location模块中
+
+            sub_filter_last_modified on| off,默认是关闭的 主要是客户端和服务端做比较，返回最新的内容
+            主要是配置在http,server,location模块中
+
+            sub_filter_once on|off 替换内容是第一个还是所有 默认是on
+            主要是配置在http,server,location模块中
+
+7.nginx的请求限制
+    需要使用到ab工具进行测试验证：yum -y install httpd-tools
+    1.连接频率限制:limit_conn_module
+        语法：limit_conn_zone key zone=name:size;
+                主要是配置在http模快
+        语法：limit_conn zone number;
+                主要是配置在http,server,location模快
+
+       如： limit_conn_zone $binanry_remote_addr zone=conn-zone:1m;       //http中配置
+            limit_conn conn-zone 1;                                       //当前客户端只限制1个人可以调用
+    2.连接请求限制:limit_req_module
+       语法：limit_req_zone key zone=name:size rate=rate;
+                主要是配置在http模快
+       语法：limit_req zone=name [burst=name][nodelay];
+                主要是配置在http,server,location模块
+       如:limit_req_zone $binanry_remote_add zone=req-zone:1m rate=1r/s;
+            limit_req zone=req-zone;
+            limit_req zone=req-zone burst=3;
+            limit_req zone=req-zone burst=3 nodelay;
+
+
+8.nginx访问控制：
+    1.基于IP的访问控制
+        http_access_module
+        语法:allow IP地址|网段|socket|all;
+        主要配置在http,server,location,limit_except
+
+
+        语法：deny IP地址|网段|socket|all;
+        主要配置在http,server,location,limit_except
+
+         http_access_module的局限性：
+         clientIP------------->prox1-------------------->nginx如果存在代理服务，nginx服务获取的reomte_addr则是
+         上一级的代理，解决办法如下：
+            方案1：使用Http_x_forward_for，ip地址层层叠加 clientIP,proxIP1，但是存在被修改的可能，也有可能存在上游
+            不支持http_x_forward_for协议
+            方案2: geo模式
+            方案3：还用自定义变量传递
+
+    2.基于用户的信任登录访问控制http_auth_basic_module
+        语法：auth_basic 登录提示| off
+        默认：auth_basic off
+        主要配置在http,server,location,limit_except
+
+        语法：auth_basic_user_file file
+            登录文件格式：username:passwd:comment
+            密码加密方式：htpasswd -c '文件地址' username
+
+         局限性：
+            1.用户信息依赖文件方式
+            2.操作管理机械，效率低下
+         解决方案：
+            1.nginx结束LUR实现高效验证
+            2.nginx和LDAP打通，利用nginx_aythor_ldap模快
 
 
 

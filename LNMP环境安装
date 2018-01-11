@@ -336,6 +336,66 @@ PHP5.6.32版本
 
 备注：nginx配置只是暂时修改成这样，web服务器有多个项目，nginx配置需要重新配置，见nginx配置
 
+//php编译常见
+# make && make install
+ 
+##重新安装
+# make clean
+# make clean all
+# ./configure
+# make && make install
+ 
+ 
+##参数解释
+""" 安装路径 """
+--prefix=/usr/local/php56 \
+""" php.ini 配置文件路径 """
+--with-config-file-path=/usr/local/php56/etc \
+""" 优化选项 """
+--enable-inline-optimization \
+--disable-debug \
+--disable-rpath \
+--enable-shared \
+""" 启用 opcache，默认为 ZendOptimizer+(ZendOpcache) """
+--enable-opcache \
+""" FPM """
+--enable-fpm \
+--with-fpm-user=www \
+--with-fpm-group=www \
+""" MySQL """
+--with-mysql=mysqlnd \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+""" 国际化与字符编码支持 """
+--with-gettext \
+--enable-mbstring \
+--with-iconv \
+""" 加密扩展 """
+--with-mcrypt \
+--with-mhash \
+--with-openssl \
+""" 数学扩展 """
+--enable-bcmath \
+""" Web 服务，soap 依赖 libxml """
+--enable-soap \
+--with-libxml-dir \
+""" 进程，信号及内存 """
+--enable-pcntl \
+--enable-shmop \
+--enable-sysvmsg \
+--enable-sysvsem \
+--enable-sysvshm \
+""" socket & curl """
+--enable-sockets \
+--with-curl \
+""" 压缩与归档 """
+--with-zlib \
+--enable-zip \
+--with-bz2 \
+""" GNU Readline 命令行快捷键绑定 """
+--with-readline
+
+
 
 
 

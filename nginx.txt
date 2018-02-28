@@ -161,9 +161,14 @@ esac
 		NGINX_CONF_FILE="/usr/local/nginx/conf/nginx.conf"
 		
 chmod +x nginx				//添加执行权限
-chkconfig --add nginx		//添加到开机启动选项中
-chkconfig nginx on			//启用开机启动
-chkconfig --list nginx		//查看nginx开机启动状况
+//chkconfig --add nginx		//添加到开机启动选项中
+//chkconfig nginx on			//启用开机启动
+//chkconfig --list nginx		//查看nginx开机启动状况
+
+systemctl enable nginx		//添加   chkconfig nginx on（
+systemctl disable nginx		//去除   chkconfig nginx off
+systemctl is-enabled nginx	//检查是否设置为启动   chkconfig foo
+systemctl list-unit-files --type=service//查看各个级别下服务的启动与禁用情况 chkconfig --list
 
 
 将nginx加入系统服务中

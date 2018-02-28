@@ -55,3 +55,9 @@ cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf						
 
 
 /***********************************centeros7设置php-fpm开机启动*****************************************************/
+cp /usr/local/src/php-5.6.32/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
+chmod +x /etc/init.d/php-fpm
+systemctl enable php-fpm		//添加   chkconfig php-fpm on（
+systemctl disable php-fpm		//去除   chkconfig php-fpm off
+systemctl is-enabled php-fpm	//检查是否设置为启动   chkconfig php-fpm
+systemctl list-unit-files --type=service//查看各个级别下服务的启动与禁用情况 chkconfig --list

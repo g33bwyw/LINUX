@@ -1,0 +1,6 @@
+diff a/LNMP环境安装 b/LNMP环境安装	(rejected hunks)
+@@ -2,3 +3,4 @@
++基于centos7的 安装
+ Nginx 版本：1.13.6
+ 一.NGINX编译安装
+ 1.关闭selinux

@@ -1,4 +1,4 @@
-基于centos7的 安装
+基于centos7的xi安装
 Nginx 版本：1.13.6
 一.NGINX编译安装
 1.关闭selinux

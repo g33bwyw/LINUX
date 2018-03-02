@@ -1,0 +1,8 @@
+diff a/1.txt b/1.txt	(rejected hunks)
+@@ -1,5 +1,5 @@
+ 初始化
+ git
+-
++web01
+ 
+ 

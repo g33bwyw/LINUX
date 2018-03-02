@@ -1,0 +1,52 @@
+﻿安装mysql所需要的安装库
+yum -y install gcc gcc-c++ cmake ncurses-devel bison
+
+1.安装用户以及用户组
+groupadd mysql
+useradd mysql -s /sbin/nologin -g mysql
+
+2.初始化数据库
+5.7.18前的版本用如下方式：
+	/usr/local/mysql/bin/mysql_install_db --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
+5.7.18后的版本用如下方式
+	/usr/local/mysql/bin/mysqld --initialize-insecure --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/
+	
+3.修改权限
+chown -R mysql.mysql /usr/local/mysql/	
+
+4.修改数据库配置文件
+	vim /etc/my.cnf
+	[mysqld]
+	datadir=/data/mysql/data
+	basedir=/usr/local/mysql
+	socket=/tmp/mysql.sock
+	user=mysql
+	port=3306
+	[mysqld_safe]
+	log-error=/var/log/mysql/mysql.log
+	pid-file=/var/run/mysql/mysql.pid
+
+	注意log目录和权限
+
+5.添加mysql的启动脚本
+	cd /usr/local/mysql/support-files/
+	cp mysql.server /etc/init.d/mysqld
+	chmod a+x /etc/init.d/mysqld	
+	
+6.设置环境变量
+	vim /root/.bash_profile 内容修改如：PATH=$PATH:$HOME/bin:/usr/local/mysql/bin:/usr/local/mysql/lib
+	source /root/.bash_profile
+	
+7.设置开机自动启动
+	//chkconfig --add mysqld
+	//chkconfig --list mysqld
+	//chkconfig mysqld on
+	systemctl enable mysqld		//添加   chkconfig mysqld on（
+	systemctl is-enabled mysqld//检查是否设置为启动   chkconfig mysqld
+	systemctl list-unit-files --type=service//查看各个级别下服务的启动与禁用情况 chkconfig --list
+
+8.启动数据库：
+	systemctl start mysqld
+
+9.设置数据库密码
+	/usr/bin/mysqladmin -u root password 12

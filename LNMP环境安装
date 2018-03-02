@@ -12,7 +12,7 @@ Nginx 版本：1.13.6
 4.安装基本扩展包
     yum -y install gcc wget gcc-c++ automake autoconf libtool libxml2-devel libxslt-devel perl-devel perl-ExtUtils-Embed pcre-devel openssl-devel
 5.解压nginx压缩包，并且进行编译安装
-    tar -zxvf nginx-1.13.6.tar.gz -C /usr/local/src         //解压
+    tar -zxvf nginx-1.13.6.tar.gz -C /usr/local/src        //解压
 
     /*********************编译***************************************/
     ./configure \

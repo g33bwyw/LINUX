@@ -1,5 +1,5 @@
-﻿memcache安装需要先安装gcc库
-yum -y ibevent gcc
+﻿memcache安装需要先安装基本库
+yum install gcc make cmake autoconf libtool
 
 安装libevent
 http://libevent.org/下载libevent
@@ -20,4 +20,44 @@ cd memcache-2.2.7
 make && make install
 vim /usr/local/php/lib/php.ini中添加
 extension=memcache.so
+memcache默认是服务器取余算法定位服务器如果需要改成hash一致
+"memcache.hash_strategy" = consistent
+
 systemctl restart php-fpm
+
+
+//memcache的启动
+./memcached -p 11211 -l 192.168.1.205 -d -u nobody -m 64MB
+
+
+/**********************memcahce相关的使用方法**************************************/
+命令行使用
+add key flag expire length
+value
+如：
+add word 0 0 5         
+hello
+获取：get word 
+
+delete key
+如：delete word
+
+replace key flag expire length
+value
+如：replace word 0 0 6
+helloa
+
+set key flag expire length
+value
+如：set word 0 0 5
+hello
+
+
+incr key growvalue
+incr age 1		//年龄自增
+decr key growvalue
+decr age 1		//年龄自减
+
+
+stats //查看memcache状态
+flush_all   //清空所有对象

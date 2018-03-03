@@ -198,3 +198,104 @@ USR1		===========================>	重读日志，可以使用脚本对每天的
 USR2		===========================>	平滑的升级
 WINCH		===========================>	优雅关闭旧的进程(配合USR2来进行升级)
 
+/**********************************nginx访问日志进行每天定时备份shell脚本******************************************************/
+#!/bin/bash
+yesterday=`date -d yesterday +%Y%m%d`;
+filename_error='/usr/local/nginx/logs/'$yesterday'.error.log';
+filename_access='/usr/local/nginx/logs/'$yesterday'.access.log';
+#echo $filename;
+if [ -f $filename_error -a -f $filename_access ];
+then
+echo '文件已经存在';
+else
+  mv /usr/local/nginx/logs/error.log $filename_error;
+  mv /usr/local/nginx/logs/access.log $filename_access;
+  kill -USR1 `cat /usr/local/nginx/logs/nginx.pid`;
+  echo ok;
+fi
+
+/******************************************nginx中的location匹配相关说明****************************************************************************/
+location的类型大概分为三类：
+	location = patt {} [精准匹配]
+	location patt{}  [一般匹配]
+	location ~ patt{} [正则匹配]
+客户端访问服务器，请求地址进行匹配，如果碰到精准匹配优先取精准匹配，如果没有再次去找一般匹配，如果发现有多个一般匹配先去找最长的一般匹配，暂时存储起来，于是
+接着去寻找正则匹配找到则停止匹配，否则继续查找，如果未找到合适的正则匹配之前有存储的一般匹配则返回一般匹配的结果‘
+
+/******************************************nginx rewrite重写相关说明***************************************************/
+if (条件) {
+	set 设置变量
+	break 跳出rewrite
+	return 返回状态码
+	rewrite重写
+}
+rewrite    <regex>    <replacement>    [flag];
+关键字      正则        替代内容       flag标记
+
+正则：perl兼容正则表达式语句进行规则匹配
+替代内容：将正则匹配的内容替换成replacement
+flag标记：rewrite支持的flag标记
+
+last  #本条规则匹配完成后，继续向下匹配新的location URI规则
+break  #本条规则匹配完成即终止，不再匹配后面的任何规则
+redirect  #返回302临时重定向，浏览器地址会显示跳转后的URL地址
+permanent  #返回301永久重定向，浏览器地址栏会显示跳转后的URL地址
+
+
+/***********************************nginx启用gzip压缩****************************************************/
+gzip配置的常用参数
+gzip on|off;  #是否开启gzip
+gzip_buffers 32 4K| 16 8K #缓冲(压缩在内存中缓冲几块? 每块多大?)
+gzip_comp_level [1-9] #推荐6 压缩级别(级别越高,压的越小,越浪费CPU计算资源)
+gzip_disable #正则匹配UA 什么样的Uri不进行gzip
+gzip_min_length 200 # 开始压缩的最小长度(再小就不要压缩了,意义不在)
+gzip_http_version 1.0|1.1 # 开始压缩的http协议版本(可以不设置,目前几乎全是1.1协议)
+gzip_proxied          # 设置请求者代理服务器,该如何缓存内容
+gzip_types text/plain  application/xml # 对哪些类型的文件用压缩 如txt,xml,html ,css
+gzip_vary on|off  # 是否传输gzip压缩标志
+
+例如：
+gzip on;
+gzip_buffers 32 4K;
+gzip_types text/plain  text/css text/xml application/javascript image/gif image/jpeg image/png;
+gzip_vary on;
+
+/****************************静态文件客户端缓存设置***********************************************/
+原理是: 服务器响应文件内容是,同时响应etag标签(内容的签名,内容一变,他也变), 和 last_modified_since 2个标签值
+浏览器下次去请求时,头信息发送这两个标签, 服务器检测文件有没有发生变化,如无,直接头信息返回 etag,last_modified_since
+浏览器知道内容无改变,于是直接调用本地缓存.
+这个过程,也请求了服务器,但是传着的内容极少.
+location ~* ^.+\.(js|ico|gif|jpg|jpeg|png|html|htm)$ {
+	expires 24h;
+}
+
+/**************************************nginx反向代理*********************************************************/
+如图片反向代理到其他服务器
+location ~ \.(jpg|jpeg|png|gif)$ {
+	proxy_pass http://192.168.1.204:8080;
+	expires 1d;
+}
+
+/***************************************nginx实现负载均衡********************************/
+upstream tomcatserver1 {  
+	server 192.168.72.49:8080 weight=3;  
+	server 192.168.72.49:8081;  
+}   
+  
+server {  
+	listen       80;  
+	server_name  8080.max.com;  
+	#charset koi8-r;  
+	#access_log  logs/host.access.log  main;  
+	location / {  
+		proxy_pass   http://tomcatserver1;  
+		index  index.html index.htm;  
+	}  
+}  
+
+/*****************************nginx安装第三方模块****************************************/
+./configure --prefix=/xxx/xxx --add_module=/path/ngx_module
+
+
+
+

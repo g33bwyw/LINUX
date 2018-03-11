@@ -49,4 +49,12 @@ chown -R mysql.mysql /usr/local/mysql/
 	systemctl start mysqld
 
 9.设置数据库密码
-	/usr/bin/mysqladmin -u root password 12
+	/usr/bin/mysqladmin -u root password 123456
+	
+
+/****************************开启查询************************************************************************/
+vim /etc/my.conf	
+slow_query_log = ON
+slow_query_log_file = /var/lib/mysql/test-10-226-slow.log
+long_query_time = 1
+/*************************************mysql优化*******************************************************/	

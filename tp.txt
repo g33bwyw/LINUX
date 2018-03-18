@@ -1,0 +1,130 @@
+﻿1.tp用法
+use think\Db;
+$data = Db::name("data")->find();
+echo "<pre>";print_r($data);die();
+
+
+/*********************url路由*******************************/
+配置文件修改
+'url_convert' => false,		//严格区分大小写
+'url_param_type' => 1		//参数按照顺序严格传值
+'pathinfo_depr' => '/'		//url分割符号
+'url_html_suffix' => 'html'		//url后缀修改
+'default_filter' => 'htmlspecialchars'		// 设置默认的全局过滤规则 多个用数组或者逗号分隔
+// 默认输出类型
+'default_return_type'    => 'html',
+
+隐藏index.php
+apache底下做如下修改：
+<IfModule mod_rewrite.c>
+Options +FollowSymlinks -Multiviews
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php/$1 [QSA,PT,L]
+</IfModule>
+
+phpStudy下做出如下修改：
+<IfModule mod_rewrite.c>
+Options +FollowSymlinks -Multiviews
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [L,E=PATH_INFO:$1]
+</IfModule>
+
+apache下如果以上方法都不可以的化可以尝试如下方法：
+<IfModule mod_rewrite.c>
+Options +FollowSymlinks -Multiviews
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php?/$1 [QSA,PT,L]
+</IfModule>
+
+nginx下添加如下修改
+location / { 
+	if (!-e $request_filename) {
+		rewrite ^(.*)$ /index.php?s=/$1 last;
+		break;
+	}
+}
+
+
+route下定义路由
+'[test]' => [//路由分组模式
+	':name/:age'=> ['index/index/test',['method'=>'get'],['name'=>'\w+','id'=>'\d+']],		//127.0.0.1/test/wyw/29
+	':name'=>['index/index/demo',['method'=>'get'],['name'=>'\w+']],						//127.0.0.1/test/wyw
+],
+'demo/:type'=> function($type='php'){														//闭包写法
+	return 'demo类型：'.$type;
+}
+
+
+url生成url地址
+$url = url("index/index/test",['name'=>'wyw','age'=>18]);
+
+
+
+/**************************请求与响应**Request::instance()**************************************/
+1.未继承think\controlelr
+$request = Request::instance();
+2.继承think\controller;
+echo "<pre>";print_r($this->request);
+echo "<hr/>";
+echo $this->request->get('0');
+echo "<hr/>";
+echo "用户"."<br/>";
+echo "<pre>";print_r($this->request->user);	//绑定参数获得
+$path = $this->request->path();
+echo $path."<br/>";
+$method = $this->request->method();
+echo $method."<br/>";
+$server =$this->request->server();
+echo "<pre>";print_r($server);
+$input =$this->request->input();
+echo "<pre>";print_r($input);
+echo "<br/>";
+$user = $this->request->get("user");
+echo "用户信息";
+echo "<pre>";print_r($user);
+
+3.get,post的获取
+http://127.0.0.5/index/index/check?name=wyw
+$name = input('get.name');
+echo $name;
+
+4.手动返回json
+return json($data, 201, ['Cache-control' => 'no-cache,must-revalidate']);
+return xml(['name'=>'wyw','age'=>18]);
+return jsonp(['name'=>'wyw','age'=>18]);
+
+5.成功跳转
+$this->success("检查成功", url('index/index/index',['name'=>'wyw']));
+$this->redirect(url('index/index/index',['name'=>'wyw']),301);
+$this->error("错误",url('index/index/index',['name'=>'wyw']));
+
+/*************成功跳转和失败跳转对应的文件修改*******************/
+'dispatch_success_tmpl'  => THINK_PATH . 'tpl' . DS . 'dispatch_jump.tpl',
+'dispatch_error_tmpl'    => THINK_PATH . 'tpl' . DS . 'dispatch_jump.tpl',
+
+
+
+
+
+
+/**********************************数据库**********************************************/
+数据库原生语句使用
+$sql = "delete from think_data where name='c++'";
+$result = Db::execute($sql);		//修改都是使用如下方法
+
+$sql = "select count(*) as cnt from think_data";
+$result = Db::query($sql);			//查询都是使用如下方法
+
+切换数据库查询
+$result = Db::connect('mysql://root:123456@127.0.0.1:3306/thinkphp#utf8')->query('selec
+t * from think_data where id = 1');
+dump($result);
+
+
+

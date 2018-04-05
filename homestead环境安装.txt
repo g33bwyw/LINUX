@@ -1,4 +1,4 @@
-下载virtualbox,vagrant,homestea软件
+下载virtualbox,vagrant,homestead三个软件
 1.网速足够的情况下执行
 vagrant box add laravel/homestead
 2.否则先把laravel的homestead下载好

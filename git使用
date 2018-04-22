@@ -1,3 +1,6 @@
+git init
+$ git config user.name 'github用户名'
+$ git config user.email '邮箱'
 一.git SSH免密推送
     1.检查 ~ssh目录是否存在，存在且删除
     2.ssh-keygen -t rsa -C "email@qq.com  生成证书
@@ -9,3 +12,79 @@
 备注：如果使用soucetree 一开始使用https clone的要改成 ssh
 1.菜单：工具/选项   SSH客户端配置要改成openssh
 2.项目，导航栏设置菜单中需要把远程克隆仓库地址改成由https得改成ssh的
+
+1.git全局配置添加
+git config --list					//全局配置查看
+git config --list --local			//局部配置查看
+//全局用户用户
+git config --global user.name 'wyw'
+git config --global user.email 'wyw@qq.com'
+git config --global alias.st status
+git init	//初始化
+闯进 .gitignore
+
+//局部用户
+进入相应的目录(二种方式去除)
+git config  user.name 'wyw'
+git config --local user.email 'wyw@qq.com'
+
+//别名配置
+ git config  --global alias.st status
+
+//pull.rebease设置
+git config pull.rebease true
+
+//克隆分支
+git clone -b 地址
+
+//打tag
+git tag -a v0.01 -m '0.01'	//打tag
+git push --tag          //推送tag
+git tag -l 'v0.0*		//查找tag
+git tage -a v0.09 id -m '0.09'			//为制定提交日志打标签
+
+//查看文件变化的内容
+git diff			//非暂存区
+git diff --stages 	//暂存区
+
+
+//远程仓库
+git fetch 			//远程拉取版本号
+git merge			//进行合并
+git pull = git fetch + git merge
+
+
+//远程推送
+git push origin dev				//推送远程分支
+git push origin -d dev			//删除远程分支
+
+//远程仓库细信息
+git remote -v
+git remote add orgins http;*******	//添加远程仓库
+git remote remove origin
+
+//git rebease 和 git merge
+git merge合并后保留二个分支的记录
+git rebease合并后会展示成一个分支记录，例外一个分支的提交实际生成了一个副本
+
+
+//git撤销和回滚
+未添加暂存区的撤销
+git checkout -- file
+git checkout -- .			//所有文件撤销
+
+添加暂存区的撤销
+git reset HEAD file
+git reset HEAD				//所有文件取消
+
+commit的撤销
+git revrert commidid		//撤销记录
+
+
+回滚操作
+git reset --hard commidid	//回滚到某个操作
+
+
+//暂存
+git stash
+git stash pop
